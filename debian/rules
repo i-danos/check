@@ -9,12 +9,18 @@ override_dh_auto_clean:
 	rm -f src/check.h
 
 override_dh_auto_configure:
-	dh_auto_configure --builddirectory build-standard -- --prefix=/usr \
+	# Force mawk regardless of what else is on PATH: AC_PROG_AWK's search order
+	# tries gawk before mawk, and the generated checkmk script's own escaping
+	# (AWK_GSUB_DBL_BSLASH, probed live against whichever awk configure finds)
+	# is only meant to match the mawk that debian/patches/02awk.patch hardcodes
+	# into checkmk's shebang -- letting configure probe against gawk instead
+	# would compute that escaping for the wrong interpreter.
+	AWK=mawk dh_auto_configure --builddirectory build-standard -- --prefix=/usr \
 		--libdir=\$${prefix}/lib/$(DEB_HOST_MULTIARCH) \
 		--host=$(DEB_HOST_GNU_TYPE) \
 		--infodir=/usr/share/info --disable-shared --enable-subunit
-	
-	CFLAGS="-fPIC $(CFLAGS)" dh_auto_configure --builddirectory build-pic
+
+	CFLAGS="-fPIC $(CFLAGS)" AWK=mawk dh_auto_configure --builddirectory build-pic
 		-- --prefix=/usr --host=$(DEB_HOST_GNU_TYPE) \
 		--libdir=\$${prefix}/lib/$(DEB_HOST_MULTIARCH) \
 		--infodir=/usr/share/info --disable-shared --enable-subunit

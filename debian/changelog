@@ -1,3 +1,20 @@
+check (0.12.0-0.3danos1) unstable; urgency=medium
+
+  * Drop Build-Conflicts: gawk. Debian:13/standard's OBS build root
+    preinstalls gawk project-wide, unconditionally, before any package's own
+    Build-Depends are resolved -- neither "Ignore:" nor "Substitute:" in this
+    project's own prjconf can reach that upstream project's own preinstall
+    list, so the only place left to fix this is here.
+  * debian/rules: pin AWK=mawk for both dh_auto_configure invocations, so
+    that AC_PROG_AWK's own search order (which tries gawk before mawk) can no
+    longer pick gawk now that its presence is no longer prevented. This keeps
+    the escaping computed for AWK_GSUB_DBL_BSLASH (checkmk's own
+    gsub-doubled-backslash macro) matching the mawk that
+    debian/patches/02awk.patch already hardcodes into checkmk's shebang,
+    rather than being probed against a different awk implementation.
+
+ -- DANOS <noreply@danos.io>  Mon, 28 Sep 2026 07:00:00 +0800
+
 check (0.12.0-0.2) unstable; urgency=medium
 
   * Non-maintainer upload.
